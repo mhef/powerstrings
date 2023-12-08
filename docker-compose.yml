@@ -1,0 +1,10 @@
+version: '3'
+services:
+  powerstrings:
+    container_name: powerstrings
+    image: powerstrings
+    command: npm run dev
+    volumes:
+      - ./:/app
+    ports:
+      - "5173:5173"
