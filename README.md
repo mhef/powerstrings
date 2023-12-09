@@ -6,7 +6,7 @@
 
 PowerStrings is a webtool to easily manipulate, transform and format strings (texts).
 
-Works by taking an input, chaining string and arrays transformers and then returning an output.
+Works by taking an input, chaining strings and arrays transformers and then returning an output.
 
 ## Developing
 
