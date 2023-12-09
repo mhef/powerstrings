@@ -1,0 +1,23 @@
+@import url("https://fonts.googleapis.com/css?family=Nunito:300,400,400i,600,700");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined");
+
+@import 'floating-vue/dist/style.css';
+
+@import "./abstracts/variables";
+@import "./abstracts/theme";
+
+@import "./layout";
+
+@import "./vendors";
+
+.material-symbols-outlined {
+  user-select: none;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 200,
+  'GRAD' 100,
+  'opsz' 24;
+}

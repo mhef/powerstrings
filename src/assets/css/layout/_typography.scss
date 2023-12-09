@@ -1,0 +1,9 @@
+a, a:visited, a:active {
+  text-decoration: none;
+  color: $verdigris;
+  font-weight: 800;
+
+  &:hover {
+    color: darken($verdigris, 15%);
+  }
+}

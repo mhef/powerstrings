@@ -1,0 +1,102 @@
+.btn {
+  font-size: 0.9rem;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 15px;
+  border-radius: 7px;
+  line-height: .8;
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  border: thin solid rgba(255, 255, 255, 0.3);
+
+  // Styles
+
+  &:hover {
+    background-color: $jet;
+  }
+
+  &:active {
+    background-color: $onyx;
+  }
+
+  // Primary
+  &.primary {
+    background-color: $eerie-black;
+    color: $powder-blue;
+  }
+
+  &.primary:hover {
+    background-color: darken($eerie-black, 8%);
+  }
+
+  &.primary:active {
+    background-color: lighten($eerie-black, 5%);
+  }
+
+  &.primary:disabled {
+    background-color: lighten($eerie-black, 2%);
+    cursor: initial;
+  }
+
+  // secondary
+  &.secondary {
+    background-color: $onyx;
+    color: $powder-blue;
+  }
+
+  &.secondary:hover {
+    background-color: darken($onyx, 3%);
+    color: $powder-blue;
+  }
+
+  &.secondary:active {
+    background-color: lighten($onyx, 4%);
+    color: $powder-blue;
+  }
+
+  &.secondary:disabled {
+    background-color: lighten($onyx, 2%);
+    color: $powder-blue;
+    cursor: initial;
+  }
+
+  // Sizes
+  &.size-xs {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  &.size-md {
+    font-size: 1rem;
+    padding: 13px;
+  }
+
+  &.size-lg {
+    font-size: 1.1rem;
+    padding: 15px;
+  }
+
+  // Modifications
+  &.rounded {
+    border-radius: 50px;
+  }
+
+  // material symbols
+  .material-symbols-outlined {
+    font-size: 24px;
+    font-variation-settings:
+    'FILL' 0,
+    'wght' 600,
+    'GRAD' 300,
+    'opsz' 24;
+
+    &:hover {
+      color: inherit;
+    }
+  }
+}

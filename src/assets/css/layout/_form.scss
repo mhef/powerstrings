@@ -1,0 +1,29 @@
+.form-group {
+  .label {
+    display: inline-block;
+    margin-bottom: .5rem;
+  }
+
+  .form-control {
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: $powder-blue;
+    background-color: $charcoal;
+    background-clip: padding-box;
+    border: 1px solid $onyx;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+
+    &:active, &:focus, &:-webkit-autofill {
+      background-color: $charcoal!important;
+      outline: 2px solid $cerulean;
+    }
+
+    &:disabled {
+      background-color: lighten($charcoal, 5%);
+    }
+  }
+}

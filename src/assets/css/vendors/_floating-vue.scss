@@ -1,0 +1,21 @@
+.v-popper__popper {
+    z-index: 10000000 !important;
+}
+
+.v-popper--theme-dropdown {
+    .v-popper__arrow-inner {
+        border-color: $onyx;
+    }
+
+    .v-popper__arrow-outer {
+        border-color: $cerulean;
+    }
+
+    .v-popper__inner {
+        background-color: $onyx;
+        color: inherit !important;
+        padding: 15px;
+        border-radius: 10px !important;
+        border: thin solid $cerulean;
+    }
+}
