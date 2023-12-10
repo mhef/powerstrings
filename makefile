@@ -11,7 +11,7 @@ install:
 
 .PHONY: ci
 ci:
-	docker-compose run --no-deps powerstrings npm install
+	docker-compose run --no-deps powerstrings npm ci
 
 .PHONY: build
 build:
