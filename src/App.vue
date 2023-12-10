@@ -16,8 +16,10 @@ import { RouterView } from 'vue-router';
     </div>
   </header>
   <main>
-    <div class="hero">
-      With PowerStrings you can easily&nbsp;<span>manipulate</span>,&nbsp;<span>transform</span>&nbsp;and&nbsp;<span>format</span>&nbsp;texts 🛠️
+    <div class="hero-container">
+      <div class="hero">
+        With PowerStrings you can easily <span>manipulate</span>, <span>transform</span> and <span>format</span> texts ⚡️🛠️
+      </div>
     </div>
     <RouterView />
   </main>
@@ -33,16 +35,18 @@ header {
   left: 0;
   top: 0;
   background-color: $jet;
-  height: 75px;
   padding: 5px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px 30px;
 
   .logo {
-    height: 100%;
+    flex-shrink: 0;
+    height: 65px;
     img {
-      height: 100%;
+      height: 65px;
     }
   }
 }
@@ -50,20 +54,31 @@ header {
 main {
   padding-top: 100px;
 
-  .hero {
+  .hero-container {
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    font-size: 2rem;
-    font-weight: 700;
-    padding: 30px 50px;
-    color: $platinum;
     margin-bottom: 25px;
 
-    span {
-      color: $verdigris;
+    @media (max-width: map-get($breakpoints, "lg")) {
+      margin-bottom: 10px;
+    }
+
+    .hero {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      padding: 30px 50px;
+      color: $platinum;
+
+      @media (max-width: map-get($breakpoints, "lg")) {
+        font-size: 1.5rem;
+      }
+
+      span {
+        color: $verdigris;
+      }
     }
   }
 }

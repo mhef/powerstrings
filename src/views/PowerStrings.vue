@@ -426,7 +426,15 @@ function copyOutputToClipboard() {
   align-items: flex-start;
   gap: 20px;
 
+  @media (max-width: map-get($breakpoints, "lg")) {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 10px 15px;
+  }
+
   .form-group {
+    flex: 1;
     padding: 25px;
     border-radius: 15px;
     background-color: $onyx;
