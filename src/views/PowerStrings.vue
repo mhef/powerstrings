@@ -1,18 +1,27 @@
 <script setup lang="ts">
-import { reactive, computed, ref } from 'vue';
+import {
+  reactive,
+  computed,
+  watch,
+  ref,
+  onMounted,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import Encoding from 'encoding-japanese';
-import { PSTransformers, type PSTransformer } from './Transform';
+import {
+  PSTransformers,
+  applyTransformer,
+  encodeATL,
+  decodeATL,
+  type PSTransformer,
+  type PSTransformerWithArguments,
+} from './Transform';
+import ButtonCopy from '@/components/ButtonCopy.vue';
 import PowerStringsTransformer from './PowerStringsTransformer.vue';
 import PowerStringsDownload from './PowerStringsDownload.vue';
+import PowerStringsShare from './PowerStringsShare.vue';
 
-/**
- * PSTransformerWithArguments define a PSTransformer along with a list of
- * arguments.
- */
-interface PSTransformerWithArguments {
-  Transformer: PSTransformer;
-  Arguments: string[];
-}
+const route = useRoute();
 
 /**
  * state hold the current state of the component.
@@ -27,12 +36,6 @@ const state = reactive({
    * AppliedTransformers hold the current applied transformers.
    */
   AppliedTransformers: [] as PSTransformerWithArguments[],
-
-  /**
-   * CopiedHint indicate that a sucessful copying to the clipboard had been made
-   * recently. The interface should display some hint to the user.
-   */
-  CopiedHint: false,
 });
 
 /**
@@ -40,40 +43,16 @@ const state = reactive({
  */
 const fileInput = ref(null);
 
-/**
- * applyTransformer applies the given transformer on the given value and then
- * return the value.
- *
- * If the value is an array and the transformer target strings, it will be applied
- * recursively.
- * If the value is an array and the transformer target arrays, it will be applied
- * to the most nested array.
- */
-function applyTransformer(v: string | string[], t: PSTransformerWithArguments): any {
-  if (typeof v !== 'string' && !(v instanceof Array)) {
-    throw new Error('applyTransformer: v is not a string nor array');
-  }
-  if (typeof v === 'string' && t.Transformer.Target === 'array') {
-    throw new Error('applyTransformer: string cannot be applied on targeted array transformer');
-  }
-  if (v instanceof Array) {
-    if (t.Transformer.Target === 'string') {
-      return v.map((vm) => (applyTransformer(vm, t)));
-    }
-
-    // If the transformer target is array, apply the transform to the most nested
-    // array.
-    if (t.Transformer.Target === 'array') {
-      if (v.length > 0 && typeof v[0] === 'string') {
-        // if at least one child of this array is a string, this array should not
-        // have nested arrays, so, apply the transform on it.
-        return t.Transformer.Func(v, ...t.Arguments);
-      }
-      return v.map((vm) => (applyTransformer(vm, t)));
+onMounted(() => {
+  if (route.query.t !== undefined) {
+    try {
+      state.AppliedTransformers = decodeATL(route.query.t as string);
+    } catch (e) {
+      // eslint-disable-next-line no-alert
+      alert(`Failed to load transformers from URL: ${e}`);
     }
   }
-  return t.Transformer.Func(v, ...t.Arguments);
-}
+});
 
 /**
  * outputValue return the output value of the transformations applied on the
@@ -182,6 +161,25 @@ const outputStats = computed(() => {
 });
 
 /**
+ * Watch the AppliedTransformers and when it changes, update the URL query.
+ */
+watch(
+  () => state.AppliedTransformers,
+  () => {
+    // We do not use vue-router because it does not use encodeURI but a private
+    // URI-enconding, causing inconsistencies.
+    let url = new URL(window.location.href);
+    if (state.AppliedTransformers.length === 0) {
+      url.searchParams.delete('t');
+    } else {
+      url.searchParams.set('t', encodeATL(state.AppliedTransformers));
+    }
+    window.history.pushState({}, '', url);
+  },
+  { deep: true },
+);
+
+/**
  * addTransformer adds the given transformer to the end of the applied transforms
  * list.
  */
@@ -224,15 +222,6 @@ function fileSelected() {
     state.InputValue = e?.target?.result;
   };
   reader.readAsText(fi.files[0]);
-}
-
-/**
- * copyOutputToClipboard copy the output contents to the navigator clipboard.
- */
-function copyOutputToClipboard() {
-  navigator.clipboard.writeText(outputValueFormated.value);
-  state.CopiedHint = true;
-  setTimeout(() => { state.CopiedHint = false; }, 2000);
 }
 </script>
 
@@ -323,6 +312,7 @@ function copyOutputToClipboard() {
           >
             <span class="material-symbols-outlined">restart_alt</span>
           </div>
+          <power-strings-share :transformers="state.AppliedTransformers" />
         </template>
       </div>
       <template v-if="state.AppliedTransformers.length === 0">
@@ -356,20 +346,7 @@ function copyOutputToClipboard() {
           <h2>Output</h2>
         </div>
         <div class="actions">
-          <div
-            v-tooltip="{
-              content: state.CopiedHint ? 'Copied!' : 'Copy to clipboard',
-              triggers: ['hover'],
-            }"
-            :class="{
-              'btn': true,
-              'size-md': true,
-              'copied': state.CopiedHint,
-            }"
-            @click="copyOutputToClipboard"
-          >
-            <span class="material-symbols-outlined">content_copy</span>
-          </div>
+          <button-copy :content="outputValueFormated" />
           <power-strings-download :content="outputValueFormated" />
         </div>
       </div>
@@ -453,15 +430,6 @@ function copyOutputToClipboard() {
         align-items: center;
         flex-wrap: wrap;
         gap: 15px;
-
-        .btn {
-          transition: all 0.5s;
-
-          &.copied {
-            color: #2ea538;
-            border-color: #2ea538;
-          }
-        }
       }
     }
 

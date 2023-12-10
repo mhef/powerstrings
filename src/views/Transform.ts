@@ -6,6 +6,11 @@ import { cloneDeep } from 'lodash';
  */
 export interface PSTransformer {
   /**
+   * ID define the unique ID of this transformer.
+   */
+  ID: string;
+
+  /**
    * Target define the value type that this transformer should receive.
    */
   Target: 'string' | 'array';
@@ -49,10 +54,11 @@ export interface PSTransformer {
 }
 
 /**
- * PSTransformers hold the list of implemented transformers.
+ * PSTransformers implement the available transformers.
  */
 export const PSTransformers = [
   {
+    ID: 'split',
     Target: 'string',
     Return: 'array',
     Name: 'Split',
@@ -66,6 +72,7 @@ export const PSTransformers = [
     ],
   },
   {
+    ID: 'trim',
     Target: 'string',
     Return: 'string',
     Name: 'Trim',
@@ -75,6 +82,7 @@ export const PSTransformers = [
     Args: [],
   },
   {
+    ID: 'lower_case',
     Target: 'string',
     Return: 'string',
     Name: 'Lower Case',
@@ -84,6 +92,7 @@ export const PSTransformers = [
     Args: [],
   },
   {
+    ID: 'upper_case',
     Target: 'string',
     Return: 'string',
     Name: 'Upper Case',
@@ -93,6 +102,7 @@ export const PSTransformers = [
     Args: [],
   },
   {
+    ID: 'replace',
     Target: 'string',
     Return: 'string',
     Name: 'Replace',
@@ -109,6 +119,7 @@ export const PSTransformers = [
     ],
   },
   {
+    ID: 'slice',
     Target: 'string',
     Return: 'string',
     Name: 'Slice',
@@ -129,6 +140,7 @@ export const PSTransformers = [
     ],
   },
   {
+    ID: 'slice_array',
     Target: 'array',
     Return: 'array',
     Name: 'Slice Array',
@@ -149,6 +161,7 @@ export const PSTransformers = [
     ],
   },
   {
+    ID: 'reverse',
     Target: 'array',
     Return: 'array',
     Name: 'Reverse',
@@ -162,6 +175,7 @@ export const PSTransformers = [
     Args: [],
   },
   {
+    ID: 'sort',
     Target: 'array',
     Return: 'array',
     Name: 'Sort',
@@ -187,6 +201,7 @@ export const PSTransformers = [
     Args: [],
   },
   {
+    ID: 'join',
     Target: 'array',
     Return: 'string',
     Name: 'Join',
@@ -200,3 +215,95 @@ export const PSTransformers = [
     ],
   },
 ] as PSTransformer[];
+
+/**
+ * PSTransformerWithArguments define a PSTransformer along with a list of
+ * arguments. Usually this is used to store the applied transformers and their
+ * arguments.
+ */
+export interface PSTransformerWithArguments {
+  Transformer: PSTransformer;
+  Arguments: string[];
+}
+
+/**
+ * applyTransformer applies the given transformer on the given value and then
+ * return the value.
+ *
+ * If the value is an array and the transformer target strings, it will be applied
+ * recursively.
+ * If the value is an array and the transformer target arrays, it will be applied
+ * to the inner most array.
+ */
+export function applyTransformer(v: string | string[], t: PSTransformerWithArguments): any {
+  if (typeof v !== 'string' && !(v instanceof Array)) {
+    throw new Error('applyTransformer: v is not a string nor array');
+  }
+  if (typeof v === 'string' && t.Transformer.Target === 'array') {
+    throw new Error('applyTransformer: a targeted array transformer cannot be applied on string');
+  }
+  if (v instanceof Array) {
+    if (t.Transformer.Target === 'string') {
+      return v.map((vm) => (applyTransformer(vm, t)));
+    }
+
+    // If the transformer target is array, apply the transform to the most inner
+    // array.
+    if (t.Transformer.Target === 'array') {
+      if (v.length > 0 && typeof v[0] === 'string') {
+        // if at least one child of this array is a string, this array should not
+        // have nested arrays, so, apply the transform on it.
+        return t.Transformer.Func(v, ...t.Arguments);
+      }
+      return v.map((vm) => (applyTransformer(vm, t)));
+    }
+  }
+  return t.Transformer.Func(v, ...t.Arguments);
+}
+
+/**
+ * encodeATL encode a list of PSTransformerWithArguments into a transportable
+ * string. ATL stands for 'Applied Transformer List'.
+ */
+export function encodeATL(ts: PSTransformerWithArguments[]): string {
+  let ret = [] as {
+    i: string, // transformer ID
+    a: string[], // transformer supplied arguments
+  }[];
+  ts.forEach((t) => {
+    ret.push({
+      i: t.Transformer.ID,
+      a: t.Arguments,
+    });
+  });
+  return JSON.stringify(ret);
+}
+
+/**
+ * decodeATL decode a ATL string previously encoded with encodeATL.
+ */
+export function decodeATL(t: string): PSTransformerWithArguments[] {
+  let p = JSON.parse(t);
+  if (!(p instanceof Array)) {
+    throw new Error('decodeAppliedTransformerList: parsed value is not array');
+  }
+
+  let ret = [] as PSTransformerWithArguments[];
+  p.forEach((t) => {
+    if (t?.i === undefined || !(t?.a instanceof Array)) {
+      throw new Error('decodeAppliedTransformerList: transformer id or args malformed');
+    }
+    if (!t.a.every((ta: any) => (typeof ta === 'string'))) {
+      throw new Error(`decodeAppliedTransformerList: transformer ${t.i} has non-string argument`);
+    }
+    let tf = PSTransformers.find((pst) => (pst.ID === t.i));
+    if (tf === undefined) {
+      throw new Error(`decodeAppliedTransformerList: transformer ${t.i} not found`);
+    }
+    ret.push({
+      Transformer: tf,
+      Arguments: t.a,
+    });
+  });
+  return ret;
+}
