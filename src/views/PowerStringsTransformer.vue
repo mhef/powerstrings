@@ -182,6 +182,13 @@ function handleTransformerBtnClick() {
     color: #ffffff;
   }
 
+  textarea {
+    min-width: 300px;
+    &::placeholder {
+      font-size: 0.85rem;
+    }
+  }
+
   .mt-20 {
     margin-top: 20px;
   }

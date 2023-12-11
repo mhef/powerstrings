@@ -70,11 +70,58 @@ export const PSTransformers = [
     Name: 'Split',
     Description: 'Split the string at the ocurrencies of the given <b>Separator</b>.',
     Icon: 'cut',
-    Func: (v: string, sep: string) => (v.split(sep)),
+    Func: (v: string, sep: string) => {
+      if (sep.includes('%w%')) {
+        let sepEscaped = sep.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // escape regex chars
+        // Should the below regex have a capturing group?
+        //
+        // According to MDN, if there are capturing groups in the separator regex
+        // of the split, those capturing groups values are spliced on the outputed
+        // array.
+        //
+        // To follow the same behaviour of the split without regex, I will not use
+        // capturing groups on this transformer.
+        //
+        // Ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split#description
+        let sepRegex = sepEscaped.replaceAll('%w%', '[^]*?');
+        return v.split(new RegExp(sepRegex));
+      }
+      return v.split(sep);
+    },
     Args: [
       {
         Name: 'Separator',
-        Placeholder: '',
+        Placeholder: 'Use %w% as wildcard',
+      },
+    ],
+  },
+  {
+    ID: 'replace',
+    Target: 'string',
+    Return: 'string',
+    Name: 'Replace',
+    Description: 'Replace all ocurrencies of <b>Pattern</b> with the <b>Replacement</b> content',
+    Icon: 'find_replace',
+    Func: (v: string, pattern: string, replacement: string) => {
+      if (pattern.includes('%w%')) {
+        let patEscaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // escape regex chars
+        // The below quantifier, should be lazy or greedy?
+        //
+        // As the user can previously refine the applying range with split, I will
+        // let it greedy. Discussions on this are welcome!
+        let patRegex = patEscaped.replaceAll('%w%', '([^]*)');
+        return v.replace(new RegExp(patRegex, 'g'), replacement);
+      }
+      return v.replaceAll(pattern, replacement);
+    },
+    Args: [
+      {
+        Name: 'Pattern',
+        Placeholder: 'Use %w% as wildcard',
+      },
+      {
+        Name: 'Replacement',
+        Placeholder: 'Use $& for matched and $n (n = %w% index, starting from 1) for wildcarded substrings',
       },
     ],
   },
@@ -107,25 +154,6 @@ export const PSTransformers = [
     Icon: 'arrow_upward',
     Func: (v: string) => (v.toUpperCase()),
     Args: [],
-  },
-  {
-    ID: 'replace',
-    Target: 'string',
-    Return: 'string',
-    Name: 'Replace',
-    Description: 'Replace all ocurrencies of <b>Pattern</b> with the <b>Replacement</b> content',
-    Icon: 'find_replace',
-    Func: (v: string, pattern: string, replacement: string) => (v.replaceAll(pattern, replacement)),
-    Args: [
-      {
-        Name: 'Pattern',
-        Placeholder: '',
-      },
-      {
-        Name: 'Replacement',
-        Placeholder: '',
-      },
-    ],
   },
   {
     ID: 'slice',
