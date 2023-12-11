@@ -10,6 +10,11 @@ Works by taking an input, chaining strings and arrays transformers and then retu
 
 ## Developing
 
+To build the runtime image, execute:
+ ```console
+make build-runtime
+ ```
+
 To install the dependencies, execute:
  ```console
 make install
