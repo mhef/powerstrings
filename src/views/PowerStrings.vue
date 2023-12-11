@@ -62,7 +62,12 @@ const outputValue = computed(() => {
   let v = state.InputValue as string | string[]; // actually, can be a arbitrary level of nested arrays....
   if (v.length === 0) return '';
   state.AppliedTransformers.forEach((t) => {
-    v = applyTransformer(v, t);
+    try {
+      v = applyTransformer(v, t);
+    } catch (e) {
+      // eslint-disable-next-line no-alert
+      alert(`Failed to apply transformer ${t.Transformer.Name}. Maybe it previous transformer is bugged - try to remove it.\n\n${e}`);
+    }
   });
   return v;
 });
