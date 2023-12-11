@@ -140,6 +140,7 @@ function handleTransformerBtnClick() {
               autocorrect="off"
               autocapitalize="none"
               spellcheck="false"
+              :placeholder="arg.Placeholder"
             />
           </div>
           <template v-if="!props.applied">

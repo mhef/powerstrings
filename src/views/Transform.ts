@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash';
+import { cloneDeep, pullAt } from 'lodash';
 
 /**
  * PSTransformer define a transformer. A Transformer is a operation applied to
@@ -50,6 +50,12 @@ export interface PSTransformer {
      * Name define the friendly name of this argument.
      */
     Name: string;
+
+    /**
+     * Placeholder define a placeholder for the argument, instructing the user
+     * to use it.
+     */
+    Placeholder: string;
   }[]
 }
 
@@ -68,6 +74,7 @@ export const PSTransformers = [
     Args: [
       {
         Name: 'Separator',
+        Placeholder: '',
       },
     ],
   },
@@ -112,9 +119,11 @@ export const PSTransformers = [
     Args: [
       {
         Name: 'Pattern',
+        Placeholder: '',
       },
       {
         Name: 'Replacement',
+        Placeholder: '',
       },
     ],
   },
@@ -133,9 +142,11 @@ export const PSTransformers = [
     Args: [
       {
         Name: 'Start',
+        Placeholder: '',
       },
       {
         Name: 'End (exclusive)',
+        Placeholder: '',
       },
     ],
   },
@@ -144,19 +155,35 @@ export const PSTransformers = [
     Target: 'array',
     Return: 'array',
     Name: 'Slice Array',
-    Description: 'Slice a section of the array, between <b>Start</b> and <b>End</b> indexes.',
+    Description: 'Slice a section of the array, at the given <b>Indexes</b>.',
     Icon: 'carpenter',
-    Func: ((v: Array<any>, start: string, end: string) => {
-      let s = parseInt(start, 10);
-      let e = parseInt(end, 10);
-      return v.slice(s, e);
+    Func: ((v: Array<any>, indexes: string) => {
+      let normalized = indexes.replaceAll(' ', '').replaceAll(/\r\n|\n/g, '');
+
+      if (normalized.includes('-')) {
+        let commaSpt = normalized.split('-');
+        if (commaSpt.length !== 2) return v; // do nothing
+        let s = parseInt(commaSpt[0], 10);
+        let e = parseInt(commaSpt[1], 10);
+        return v.slice(s, e);
+      }
+
+      if (normalized.includes(',')) {
+        let commaSpt = normalized.split(',');
+        let indexes = commaSpt.map((idx) => (parseInt(idx, 10)));
+        let ret = cloneDeep(v);
+        return pullAt(ret, indexes);
+      }
+
+      let idx = parseInt(normalized, 10);
+      if (Number.isNaN(idx)) return v; // do nothing
+      let ret = cloneDeep(v);
+      return pullAt(ret, idx);
     }),
     Args: [
       {
-        Name: 'Start',
-      },
-      {
-        Name: 'End (exclusive)',
+        Name: 'Indexes to slice (use , for lists and - for intervals)',
+        Placeholder: 'List e.g.: 0,3,5\nInterval e.g.: 0-5',
       },
     ],
   },
@@ -211,6 +238,7 @@ export const PSTransformers = [
     Args: [
       {
         Name: 'Separator',
+        Placeholder: '',
       },
     ],
   },
