@@ -49,6 +49,12 @@ header {
       height: 65px;
     }
   }
+
+  .github {
+    @media (max-width: map-get($breakpoints, "sm")) {
+      display: none;
+    }
+  }
 }
 
 main {
