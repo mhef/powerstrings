@@ -60,6 +60,7 @@ onMounted(() => {
  */
 const outputValue = computed(() => {
   let v = state.InputValue as string | string[]; // actually, can be a arbitrary level of nested arrays....
+  if (v.length === 0) return '';
   state.AppliedTransformers.forEach((t) => {
     v = applyTransformer(v, t);
   });
